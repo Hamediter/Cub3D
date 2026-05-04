@@ -1,0 +1,100 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   apping.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mlavry <mlavry@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/05 21:44:19 by aboutale          #+#    #+#             */
+/*   Updated: 2025/11/18 19:43:45 by mlavry           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../cub3d.h"
+
+int	is_cub(char *filename)
+{
+	int	len;
+
+	len = ft_strlen(filename);
+	if ((len <= 4) || (ft_strcmp(filename + len - 4, ".cub") != 0))
+		return (0);
+	return (1);
+}
+
+int	check_duplicate(t_data *game, char *trimmed, char *line)
+{
+	int	extra;
+
+	extra = is_param(&game->param, trimmed);
+	if (extra == 1)
+	{
+		free(line);
+		put_error_and_exit(game, "Error\nDuplicate parameter\n");
+	}
+	return (1);
+}
+
+int	all_param_ok(t_params *param)
+{
+	return (param->no && param->so && param->we && param->ea
+		&& param->f && param->c);
+}
+
+int	is_close(t_data *game)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	j = -1;
+	while (++j < game->max_len)
+	{
+		if (game->map[0][j] != '1' && game->map[0][j] != ' ')
+			put_error_and_exit (game, "Error\nMap not closed on top\n");
+	}
+	while (++i < game->count - 1)
+	{
+		if ((game->map[i][0] != '1' && game->map[i][0] != ' ')
+		|| (game->map[i][game->max_len - 1] != '1'
+			&& game->map[i][game->max_len - 1] != ' '))
+			put_error_and_exit (game, "Error\nMap not closed on sides\n");
+	}
+	j = -1;
+	while (++j < game->max_len)
+	{
+		if (game->map[game->count - 1][j] != '1'
+			&& game->map[game->count - 1][j] != ' ')
+			put_error_and_exit (game, "Error\nMap not closed on bottom\n");
+	}
+	return (1);
+}
+
+int	check_holes(t_data *game)
+{
+	int		i;
+	int		j;
+	char	c;
+
+	i = -1;
+	while (++i < game->count)
+	{
+		j = -1;
+		while (++j < game->max_len)
+		{
+			c = game->map[i][j];
+			if (c == '0' || c == 'N' || c == 'S' || c == 'E' || c == 'W')
+			{
+				if (i == 0 || game->map[i - 1][j] == ' ')
+					put_error_and_exit (game, "Error\nHole detected\n");
+				if (i == game->count - 1 || game->map[i + 1][j] == ' ')
+					put_error_and_exit (game, "Error\nHole detected\n");
+				if (j == 0 || game->map[i][j - 1] == ' ')
+					put_error_and_exit (game, "Error\nHole detected\n");
+				if (j == game->max_len - 1 || game->map[i][j + 1] == ' ')
+					put_error_and_exit (game, "Error\nHole detected\n");
+			}
+		}
+	}
+	return (1);
+}
